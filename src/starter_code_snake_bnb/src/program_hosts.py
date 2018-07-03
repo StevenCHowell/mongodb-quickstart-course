@@ -1,6 +1,7 @@
 from colorama import Fore
 from infrastructure.switchlang import switch
 import infrastructure.state as state
+import services.data_service as svc
 
 
 def run():
@@ -14,8 +15,8 @@ def run():
 
         with switch(action) as s:
             s.case('c', create_account)
-            s.case('a', log_into_account)
-            s.case('l', list_cages)
+            s.case('l', log_into_account)
+            s.case('y', list_cages)
             s.case('r', register_cage)
             s.case('u', update_availability)
             s.case('v', view_bookings)
@@ -36,6 +37,7 @@ def show_commands():
     print('What action would you like to take:')
     print('[C]reate an account')
     print('[L]ogin to your account')
+    print('List [y]our cages')
     print('[R]egister a cage')
     print('[U]pdate cage availability')
     print('[V]iew your bookings')
@@ -47,39 +49,72 @@ def show_commands():
 
 def create_account():
     print(' ****************** REGISTER **************** ')
-    # TODO: Get name & email
-    # TODO: Create account, set as logged in.
 
-    print(" -------- NOT IMPLEMENTED -------- ")
+    name = input('What is your name?')
+    email = input('What is your email?').strip().lower()
 
+    old_account = svc.find_account_by_email(email)
+    if old_account:
+        error_msg(f'ERROR: Account with email {email} already exists.')
+        return
+
+    state.active_account = svc.create_account(name, email)
+    success_msg(f'Created new account with id {state.active_account.id}.')
 
 def log_into_account():
     print(' ****************** LOGIN **************** ')
 
-    # TODO: Get email
-    # TODO: Find account in DB, set as logged in.
+    email = input('What is your email?').strip().lower()
+    account = svc.find_account_by_email(email)
 
-    print(" -------- NOT IMPLEMENTED -------- ")
+    if not account:
+        error_msg(f'Could not find account with email {email}.')
+        return
+
+    state.active_account = account
+    success_msg('Logged in successfully.')
 
 
 def register_cage():
     print(' ****************** REGISTER CAGE **************** ')
 
-    # TODO: Require an account
-    # TODO: Get info about cage
-    # TODO: Save cage to DB.
+    if not state.active_account:
+        error_msg('You must login first to register a cage.')
+        return
 
-    print(" -------- NOT IMPLEMENTED -------- ")
+    name = input('Give your cage a name: ')
+    if not name:
+        error_msg('Cancelled')
+        return
+
+    price = float(input('How much will you charge for your cage? '))
+    meters = float(input('Cage volume in square meters? '))
+    carpeted = input('Is the cage carpeted [y, n]? ').lower().startswith('y')
+    has_toys = input('Does the cage have toys [y, n]? ').lower().startswith('y')
+    allow_dangerous = input('Do you allow dangerous snakes [y, n]? ').lower().startswith('y')
+
+    cage = svc.register_cage(
+        state.active_account, name, price, meters,
+        carpeted, has_toys, allow_dangerous
+    )
+
+    state.reload_account
+    success_msg(f'Registered new cage with id {cage.id}.')
 
 
-def list_cages(supress_header=False):
-    if not supress_header:
+def list_cages(suppress_header=False):
+    if not suppress_header:
         print(' ******************     Your cages     **************** ')
 
-    # TODO: Require an account
-    # TODO: Get cages, list details
+    if not state.active_account:
+        # error_msg('You must login first to register a cage.')
+        error_msg('You must login first to list a cage.')
+        return
 
-    print(" -------- NOT IMPLEMENTED -------- ")
+    cages = svc.find_cages_for_user(state.active_account)
+    print(f'You have {len(cages)} cages.')
+    for c in cages:
+        print(f' * {c.name} is {c.square_meters} meters.')
 
 
 def update_availability():
