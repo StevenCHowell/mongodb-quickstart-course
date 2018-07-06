@@ -95,7 +95,7 @@ def register_cage():
 
     cage = svc.register_cage(state.active_account, name, price, meters,
                              carpeted, has_toys, allow_dangerous)
-    state.reload_account
+    state.reload_account()
     success_msg(f'Registered new cage with id {cage.id}.')
 
 
