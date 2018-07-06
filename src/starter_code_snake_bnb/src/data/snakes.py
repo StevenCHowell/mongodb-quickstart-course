@@ -7,7 +7,7 @@ class Snake(mongoengine.Document):
 
     length = mongoengine.FloatField(required=True, min_value=0.01)
     name = mongoengine.StringField(required=True)
-    is_venomous = mongoengine.BooleanField(required=True)
+    venomous = mongoengine.BooleanField(required=True)
 
     meta = {
         'db_alias': 'core',
