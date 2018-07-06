@@ -1,7 +1,7 @@
 from typing import List
 from data.owners import Owner
 from data.cages import Cage
-
+from data.snakes import Snake
 
 def create_account(name: str, email: str) -> Owner:
     owner = Owner()
@@ -19,7 +19,7 @@ def find_account_by_email(email: str) -> Owner:
     return owner
 
 
-def register_cage(active_account: Owner, name: str, price: float, meters: float,
+def register_cage(account: Owner, name: str, price: float, meters: float,
                   carpeted: bool, has_toys: bool,
                   allow_dangerous: bool) -> Cage:
     cage = Cage()
@@ -29,11 +29,10 @@ def register_cage(active_account: Owner, name: str, price: float, meters: float,
     cage.is_carpeted = carpeted
     cage.has_toys = has_toys
     cage.allow_dangerous_snakes = allow_dangerous
-
     cage.save()
 
-    account = find_account_by_email(active_account.email)  # get fresh copy
-    active_account.cage_ids.append(cage.id)
+    account = find_account_by_email(account.email)  # get fresh copy
+    account.cage_ids.append(cage.id)
     account.save()
 
     return cage
@@ -45,3 +44,27 @@ def find_cages_for_user(account: Owner) -> List[Cage]:
     cages = list(query)
 
     return cages
+
+
+def add_snake(account: Owner, name: str, species: float, length: float,
+              venomous: bool) -> Snake:
+    snake = Snake()
+    snake.name = name
+    snake.species = species
+    snake.length = length
+    snake.venomous = venomous
+    snake.save()
+
+    account = find_account_by_email(account.email)  # get fresh copy
+    account.snake_ids.append(snake.id)
+    account.save()
+
+    return snake
+
+
+def find_snakes_for_user(account: Owner) -> List[Snake]:
+    account = find_account_by_email(account.email)  # get fresh copy
+    query = Snake.objects(id__in=account.snake_ids).all()  # find all snake ids in account.snake_ids
+    snakes = list(query)
+
+    return snakes

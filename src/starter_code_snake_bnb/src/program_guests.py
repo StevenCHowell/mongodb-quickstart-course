@@ -2,6 +2,7 @@ from infrastructure.switchlang import switch
 import program_hosts as hosts
 from program_hosts import success_msg, error_msg
 import infrastructure.state as state
+import services.data_service as svc
 
 
 def run():
@@ -18,7 +19,7 @@ def run():
             s.case('l', hosts.log_into_account)
 
             s.case('a', add_a_snake)
-            s.case('y', view_your_snakes)
+            s.case('y', list_snakes)
             s.case('b', book_a_cage)
             s.case('v', view_bookings)
             s.case('m', lambda: 'change_mode')
@@ -54,20 +55,39 @@ def show_commands():
 
 def add_a_snake():
     print(' ****************** Add a snake **************** ')
-    # TODO: Require an account
-    # TODO: Get snake info from user
-    # TODO: Create the snake in the DB.
 
-    print(" -------- NOT IMPLEMENTED -------- ")
+    if not state.active_account:
+        error_msg('You must login first to register a cage.')
+        return
 
+    name = input('What is the name of your snake? ')
+    if not name:
+        error_msg('Cancelled')
+        return
 
-def view_your_snakes():
-    print(' ****************** Your snakes **************** ')
+    length = float(input('How long is your snake (in meters)? '))
+    species = input('Species? ')
+    venomous = input('Is your snake venomous [y, n]? ').lower().startswith('y')
 
-    # TODO: Require an account
-    # TODO: Get snakes from DB, show details list
+    snake = svc.add_snake(state.active_account, name, species, length, venomous)
+    state.reload_account
+    success_msg(f'Registered {snake.name} with id {snake.id}.')
 
-    print(" -------- NOT IMPLEMENTED -------- ")
+def list_snakes(suppress_header=False):
+    if not suppress_header:
+        print(' ****************** Your snakes **************** ')
+
+    if not state.active_account:
+        error_msg('You must login first to list your snake/s.')
+        return
+
+    snakes = svc.find_snakes_for_user(state.active_account)
+    print(f'You have {len(snakes)} snakes.')
+    for idx, s in enumerate(snakes):
+        print(
+            f' {idx+1}. {s.name} is a {s.species} that is {s.length}m long '
+            f'and is {"" if s.venomous else "not "}venomous.'
+        )
 
 
 def book_a_cage():

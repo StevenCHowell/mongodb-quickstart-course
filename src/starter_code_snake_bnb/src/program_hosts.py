@@ -50,8 +50,8 @@ def show_commands():
 def create_account():
     print(' ****************** REGISTER **************** ')
 
-    name = input('What is your name?')
-    email = input('What is your email?').strip().lower()
+    name = input('What is your name? ')
+    email = input('What is your email? ').strip().lower()
 
     old_account = svc.find_account_by_email(email)
     if old_account:
@@ -64,7 +64,7 @@ def create_account():
 def log_into_account():
     print(' ****************** LOGIN **************** ')
 
-    email = input('What is your email?').strip().lower()
+    email = input('What is your email? ').strip().lower()
     account = svc.find_account_by_email(email)
 
     if not account:
@@ -93,11 +93,8 @@ def register_cage():
     has_toys = input('Does the cage have toys [y, n]? ').lower().startswith('y')
     allow_dangerous = input('Do you allow dangerous snakes [y, n]? ').lower().startswith('y')
 
-    cage = svc.register_cage(
-        state.active_account, name, price, meters,
-        carpeted, has_toys, allow_dangerous
-    )
-
+    cage = svc.register_cage(state.active_account, name, price, meters,
+                             carpeted, has_toys, allow_dangerous)
     state.reload_account
     success_msg(f'Registered new cage with id {cage.id}.')
 
