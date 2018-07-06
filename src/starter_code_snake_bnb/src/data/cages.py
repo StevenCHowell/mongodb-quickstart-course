@@ -9,7 +9,7 @@ class Cage(mongoengine.Document):
     name = mongoengine.StringField(required=True)
     price = mongoengine.FloatField(required=True, min_value=1)
     square_meters = mongoengine.FloatField(required=True)
-    is_carpeted = mongoengine.BooleanField(required=True)
+    carpeted = mongoengine.BooleanField(required=True)
     has_toys = mongoengine.BooleanField(required=True)
     allow_dangerous_snakes = mongoengine.BooleanField(default=False)
 
