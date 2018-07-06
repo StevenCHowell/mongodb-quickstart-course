@@ -2,7 +2,7 @@ from colorama import Fore
 from infrastructure.switchlang import switch
 import infrastructure.state as state
 import services.data_service as svc
-
+from dateutil import parser
 
 def run():
     print(' ****************** Welcome host **************** ')
@@ -138,17 +138,16 @@ def update_availability():
 
     cages = svc.find_cages_for_user(state.active_account)
     selected_cage = cages[cage_number - 1]
+    success_msg(f'Selected cage {selected_cage}.')
 
     start_date = parser.parse(
         input('Enter available date [yyyy-mm-dd]: ')
     )
     days = int(input('How many days is this block of time? '))
 
-    svc.add_available_date()
-
-    # TODO: Set dates, save to DB.
-
-    print(" -------- NOT IMPLEMENTED -------- ")
+    # Set dates, save to DB.
+    svc.add_available_date(selected_cage, start_date, days)
+    success_msg(f'{selected_cage.name} available for {days} days starting {start_date}.')
 
 
 def view_bookings():
